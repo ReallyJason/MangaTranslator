@@ -82,21 +82,16 @@ async function main() {
 
     // --- auto-translate as the page loads ------------------------------------
     const page = await ctx.newPage();
-    const order = [];
-    const seen = new Set();
-    const watcher = setInterval(async () => {
-      for (const id of ["p1", "p2", "p3", "p4", "p5", "p6", "strip", "p8"]) {
-        if (seen.has(id)) continue;
-        try {
-          if (await page.evaluate(isBlob, id)) {
-            seen.add(id);
-            order.push(id);
-          }
-        } catch (e) {
-          /* navigating */
+    // Record the order images get translated, from inside the page (no polling races).
+    await page.addInitScript(() => {
+      window.__order = [];
+      new MutationObserver((list) => {
+        for (const r of list) {
+          const el = r.target;
+          if (el.dataset.fukidashi === "translated" && el.id && !window.__order.includes(el.id)) window.__order.push(el.id);
         }
-      }
-    }, 200);
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ["data-fukidashi"] });
+    });
     await page.goto(READER + "/");
 
     check("pill shows progress", await waitFor(page, () => {
@@ -113,6 +108,7 @@ async function main() {
     check("2x-density image keeps its on-screen width", Math.abs(p3.width - 450) <= 2, `width ${p3.width}px`);
     const icon = await imgInfo(page, "icon");
     check("tiny logo skipped", icon.src.includes("icon.jpg"));
+    const order = await page.evaluate(() => window.__order);
     check("initial images processed in document order", order.slice(0, 3).join(",") === "p1,p2,p3", order.join(","));
 
     // Scroll down step by step like a reader.
@@ -224,7 +220,6 @@ async function main() {
     check("translated image shown on a page whose CSP excludes blob:", await waitFor(csp, isBlob, "c1", 120000),
       await csp.evaluate(() => document.getElementById("c1").getAttribute("src").slice(0, 10)));
     await csp.screenshot({ path: path.join(OUT, "csp_page.png") });
-    clearInterval(watcher);
   } finally {
     await ctx.close();
   }
