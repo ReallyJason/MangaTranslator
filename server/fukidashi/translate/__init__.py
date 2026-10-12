@@ -109,7 +109,10 @@ class Translator:
                 res = self.llm_fn(self.s, texts, opts.source_lang, opts.target_lang, ctx.summary, ctx.glossary)
             except (LLMError, httpx.HTTPError) as e:
                 log.warning("Context mode failed (%s); falling back to fast mode", e)
-                result, engine, notes = self.fast(texts, opts)
+                try:
+                    result, engine, notes = self.fast(texts, opts)
+                except EngineError as fe:
+                    raise EngineError(f"Context mode failed ({e}) and the fast-mode fallback failed too: {fe}") from fe
                 note = f"Context mode unavailable: {e}. Used fast mode ({ENGINE_LABELS[engine]})."
                 return TranslationOutcome(result, "fast", engine, [note] + notes, degraded=True)
             self.store.update(ctx, res.summary, res.glossary)

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Fukidashi</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon32.png" alt="" width="22" height="22">
+    <h1>Fukidashi</h1>
+    <span id="server-status" class="status" title="Server status">
+      <span class="dot"></span><span id="server-label">Checking…</span>
+    </span>
+  </header>
+  <p id="server-detail" class="detail"></p>
+
+  <section>
+    <label class="row switch">
+      <span>Auto-translate <b id="site-host">this site</b></span>
+      <input type="checkbox" id="auto-site"><i></i>
+    </label>
+    <label class="row switch">
+      <span>Auto-translate all sites</span>
+      <input type="checkbox" id="auto-all"><i></i>
+    </label>
+    <div class="buttons">
+      <button id="translate-all" class="primary">Translate all now</button>
+      <button id="retranslate">Re-translate page</button>
+    </div>
+    <label class="row switch">
+      <span>Show originals</span>
+      <input type="checkbox" id="show-originals"><i></i>
+    </label>
+    <p id="page-status" class="detail"></p>
+  </section>
+
+  <section>
+    <div class="segmented" role="radiogroup" aria-label="Translation mode">
+      <button role="radio" data-mode="context" id="mode-context">Context <small>(LLM)</small></button>
+      <button role="radio" data-mode="fast" id="mode-fast">Fast <small>(no LLM)</small></button>
+    </div>
+    <p id="mode-hint" class="detail"></p>
+
+    <label class="row field">
+      <span>Fast engine</span>
+      <select id="engine">
+        <option value="auto">Auto</option>
+        <option value="deepl">DeepL</option>
+        <option value="google">Google</option>
+        <option value="offline">Offline (Argos)</option>
+      </select>
+    </label>
+
+    <div class="row field langs">
+      <select id="source-lang" aria-label="Source language"></select>
+      <span class="arrow" aria-hidden="true">→</span>
+      <select id="target-lang" aria-label="Target language"></select>
+    </div>
+
+    <label class="row field">
+      <span>Min image size</span>
+      <span class="num"><input type="number" id="min-natural" min="0" max="4000" step="10"> px</span>
+    </label>
+
+    <div class="row memory">
+      <button id="reset-memory" class="link">Reset story memory for this series</button>
+      <span id="series-key" class="detail mono"></span>
+    </div>
+  </section>
+
+  <details>
+    <summary>Advanced</summary>
+    <label class="row field">
+      <span>Server URL</span>
+      <input type="url" id="server-url" spellcheck="false">
+    </label>
+    <label class="row field">
+      <span>Font</span>
+      <input type="text" id="font" list="font-list" placeholder="server default" spellcheck="false">
+      <datalist id="font-list"></datalist>
+    </label>
+    <label class="row field">
+      <span>Min on-screen size</span>
+      <span class="num"><input type="number" id="min-rendered" min="0" max="4000" step="10"> px</span>
+    </label>
+    <p class="detail">Shortcut: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> toggles this site.</p>
+  </details>
+
+  <script src="defaults.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

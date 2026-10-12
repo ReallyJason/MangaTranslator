@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fukidashi test reader</title>
+  <style>
+    body { margin: 0; background: #222; color: #ddd; font: 14px system-ui, sans-serif; }
+    main { width: 720px; margin: 0 auto; }
+    h2 { font-size: 13px; color: #999; margin: 28px 0 6px; font-weight: 500; }
+    .page { display: block; width: 100%; height: auto; }
+    .spacer { height: 1200px; }
+  </style>
+</head>
+<body>
+<main>
+  <h2>Tiny logo (must be skipped) <img id="icon" src="http://127.0.0.1:8081/img/icon.jpg" alt="logo" width="48" height="48"></h2>
+
+  <h2>1. Plain image, hotlink-protected CDN</h2>
+  <img id="p1" class="page" src="http://127.0.0.1:8081/img/page1.jpg" alt="">
+
+  <h2>2. Unprotected CDN path</h2>
+  <img id="p2" class="page" src="http://127.0.0.1:8081/img/open/page2.jpg" alt="">
+
+  <h2>3. &lt;picture&gt; with srcset (2x density)</h2>
+  <picture>
+    <source id="p3-source" srcset="http://127.0.0.1:8081/img/page3.jpg 2x" type="image/jpeg">
+    <img id="p3" src="http://127.0.0.1:8081/img/page3.jpg" srcset="http://127.0.0.1:8081/img/page3.jpg 2x" alt="">
+  </picture>
+
+  <h2>4. blob: image made by page script</h2>
+  <img id="p4" class="page" alt="">
+
+  <div class="spacer"></div>
+
+  <h2>5. Lazy-loaded (data-src swapped in when near the viewport)</h2>
+  <img id="p5" class="page lazy" src="http://127.0.0.1:8081/img/open/placeholder.gif" data-src="http://127.0.0.1:8081/img/page5.jpg" alt="" style="min-height: 600px">
+
+  <h2>6. Reader that swaps the page image (after 6 s)</h2>
+  <img id="p6" class="page" src="http://127.0.0.1:8081/img/page6.jpg" alt="">
+
+  <div class="spacer"></div>
+
+  <h2>7. Webtoon strip</h2>
+  <img id="strip" class="page" src="http://127.0.0.1:8081/img/strip.jpg" alt="">
+
+  <h2>8. Infinite scroll (appended after 2 s)</h2>
+  <div id="more"></div>
+</main>
+<script>
+  // 4. blob: image created from fetched bytes (same-origin blob URL).
+  fetch("http://127.0.0.1:8081/img/open/page4.jpg").then(r => r.blob()).then(b => {
+    document.getElementById("p4").src = URL.createObjectURL(b);
+  });
+
+  // 5. Minimal lazy loader, like the ones manga sites use.
+  const lazyIo = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.src = e.target.dataset.src;
+      e.target.style.minHeight = "";
+      lazyIo.unobserve(e.target);
+    }
+  }, { rootMargin: "200px" });
+  document.querySelectorAll("img.lazy").forEach(img => lazyIo.observe(img));
+
+  // 6. Reader swaps to the next page.
+  setTimeout(() => { document.getElementById("p6").src = "http://127.0.0.1:8081/img/page7.jpg"; }, 6000);
+
+  // 8. Infinite scroll append.
+  setTimeout(() => {
+    const img = document.createElement("img");
+    img.id = "p8";
+    img.className = "page";
+    img.src = "http://127.0.0.1:8081/img/page8.jpg";
+    document.getElementById("more").appendChild(img);
+  }, 2000);
+</script>
+</body>
+</html>

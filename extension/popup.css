@@ -1,0 +1,104 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1c1c22;
+  --muted: #6b6b76;
+  --line: #e7e7ec;
+  --field: #f4f4f7;
+  --accent: #e8643c;
+  --accent-fg: #ffffff;
+  --ok: #2fb257;
+  --warn: #d69a00;
+  --bad: #e5483d;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1d1d22;
+    --fg: #ececf1;
+    --muted: #9a9aa6;
+    --line: #2f2f37;
+    --field: #2a2a31;
+    --accent: #ff8a5c;
+    --accent-fg: #1d1d22;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  width: 340px;
+  padding: 12px 14px 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header { display: flex; align-items: center; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; flex: 1; letter-spacing: .2px; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.status.online .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
+.status.offline .dot { background: var(--bad); }
+
+.detail { margin: 4px 0 0; font-size: 11.5px; color: var(--muted); }
+.detail.warn { color: var(--warn); }
+.detail.bad { color: var(--bad); }
+.detail:empty { display: none; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10.5px; overflow-wrap: anywhere; }
+
+section { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; }
+.row > span:first-child { flex: 1; }
+.row b { font-weight: 600; overflow-wrap: anywhere; }
+
+/* Switches */
+.switch { cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch i {
+  flex: none; position: relative; width: 34px; height: 20px; border-radius: 10px;
+  background: var(--line); transition: background .15s;
+}
+.switch i::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: transform .15s;
+}
+.switch input:checked + i { background: var(--accent); }
+.switch input:checked + i::after { transform: translateX(14px); }
+.switch input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch input:disabled + i { opacity: .5; }
+
+/* Buttons */
+button {
+  font: inherit; color: var(--fg); background: var(--field); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+button:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+button.link { background: none; border: none; padding: 0; color: var(--accent); text-align: left; }
+button.link:hover { text-decoration: underline; }
+.buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 4px; }
+
+/* Segmented control */
+.segmented { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; gap: 3px; background: var(--field); border-radius: 9px; }
+.segmented button { border: none; background: transparent; border-radius: 7px; padding: 6px 4px; }
+.segmented button small { color: var(--muted); }
+.segmented button[aria-checked="true"] { background: var(--bg); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+
+/* Fields */
+select, input[type="text"], input[type="url"], input[type="number"] {
+  font: inherit; color: var(--fg); background: var(--field); border: 1px solid var(--line);
+  border-radius: 7px; padding: 4px 6px; min-width: 0;
+}
+.field select { max-width: 170px; }
+.field input[type="url"], .field input[type="text"] { width: 190px; }
+.num { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+.num input { width: 70px; }
+.langs select { flex: 1; max-width: none; }
+.arrow { color: var(--muted); }
+.memory { flex-direction: column; align-items: flex-start; gap: 0; margin-top: 4px; }
+
+details { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }
+summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+kbd { font: 10.5px ui-monospace, monospace; padding: 1px 4px; border: 1px solid var(--line); border-radius: 4px; }

@@ -269,3 +269,20 @@ def test_fails_fast_without_any_engine(client, monkeypatch):
     assert r.status_code == 503
     assert "ANTHROPIC_API_KEY" in r.json()["error"] and "DEEPL_API_KEY" in r.json()["error"]
     assert called == []  # no OCR work was done
+
+
+def test_refresh_bypasses_cache(client):
+    _post(client, client.page_bytes, mode="fast")
+    assert _post(client, client.page_bytes, mode="fast").headers["x-fukidashi-cache"] == "hit"
+    assert _post(client, client.page_bytes, mode="fast", refresh=True).headers["x-fukidashi-cache"] == "miss"
+
+
+def test_llm_and_fallback_both_failing_reports_both(settings, monkeypatch):
+    settings.deepl_api_key = ""
+    monkeypatch.setattr("fukidashi.translate.offline.available", lambda: False)
+    t = Translator(settings, Pipeline(settings).store)
+    t.llm_fn = FakeLLM(fail="cannot reach LLM endpoint")
+    from fukidashi.translate import EngineError
+
+    with pytest.raises(EngineError, match="cannot reach LLM endpoint.*No translation engine"):
+        t.translate(["a"], TranslateOptions(mode="context"))

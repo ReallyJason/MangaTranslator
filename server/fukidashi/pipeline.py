@@ -85,7 +85,7 @@ class Pipeline:
     def process(self, data: bytes, opts: TranslateOptions) -> PipelineResult:
         t0 = time.perf_counter()
         key = cache_key(data, opts.cache_dict())
-        hit, png, meta = self.cache.get(key)
+        hit, png, meta = (False, None, {}) if opts.refresh else self.cache.get(key)
         if hit:
             headers = {k: v for k, v in meta.get("headers", {}).items()}
             headers["X-Fukidashi-Cache"] = "hit"

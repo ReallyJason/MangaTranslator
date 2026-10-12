@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fukidashi CSP test</title>
+  <style>body { margin: 0; background: #222; } img { display: block; width: 720px; margin: 20px auto; }</style>
+</head>
+<body>
+  <!-- Served with "Content-Security-Policy: img-src * data:" so blob: images are blocked. -->
+  <img id="c1" src="http://127.0.0.1:8081/img/page1.jpg" alt="">
+</body>
+</html>

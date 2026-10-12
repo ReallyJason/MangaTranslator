@@ -68,6 +68,7 @@ class TranslateOptions:
     target_lang: str = "en"
     session: str = ""
     font: str = ""
+    refresh: bool = False  # skip the cache lookup (still stores the new result)
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "TranslateOptions":
@@ -79,6 +80,7 @@ class TranslateOptions:
             target_lang=str(d.get("target_lang") or "en"),
             session=str(d.get("session") or ""),
             font=str(d.get("font") or ""),
+            refresh=bool(d.get("refresh", False)),
         )
         if o.mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
@@ -87,7 +89,7 @@ class TranslateOptions:
         return o
 
     def cache_dict(self) -> dict:
-        """Options that affect the output image (session excluded)."""
+        """Options that affect the output image (session and refresh excluded)."""
         return {
             "mode": self.mode,
             "engine": self.engine,
