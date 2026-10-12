@@ -116,9 +116,13 @@ async function main() {
     check("initial images processed in document order", order.slice(0, 3).join(",") === "p1,p2,p3", order.join(","));
 
     // Scroll down step by step like a reader.
-    for (let y = 0; y < 9000; y += 600) {
-      await page.evaluate((y) => window.scrollTo(0, y), y);
+    for (let y = 0; ; y += 600) {
+      const bottom = await page.evaluate((y) => {
+        window.scrollTo(0, y);
+        return y >= document.documentElement.scrollHeight - window.innerHeight;
+      }, y);
       await page.waitForTimeout(400);
+      if (bottom) break;
     }
     check("blob: image translated", await waitFor(page, isBlob, "p4"));
     check("lazy-loaded image translated after src swap", await waitFor(page, isBlob, "p5"));
