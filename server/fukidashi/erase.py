@@ -119,13 +119,13 @@ def _flat_fill(image: np.ndarray, block: Block, bg: np.ndarray) -> None:
     k = max(1, int(round(block.char_size * 0.06)))
     strokes = cv2.dilate(mask, np.ones((2 * k + 1, 2 * k + 1), np.uint8))
     # JPEG ringing leaves faint halos around glyphs that the threshold above
-    # misses; near the strokes, also take any pixel that is off-background,
-    # but stay clear of the components we kept (outlines, art).
+    # misses; near the strokes, repaint everything with the bubble colour,
+    # but stay clear of the components we didn't keep (outlines, art).
     r = max(3, int(round(block.char_size * 0.25)))
     near = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
     other = ((diff > 0) & ~keep[labels]).astype(np.uint8)
     other = cv2.dilate(other, np.ones((3, 3), np.uint8))
-    halo = (near > 0) & (dist > 10) & (other == 0)
+    halo = (near > 0) & (other == 0)
     crop[(strokes > 0) | halo] = bg.astype(np.uint8)
 
 

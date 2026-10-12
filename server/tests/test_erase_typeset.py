@@ -217,7 +217,7 @@ def test_jpeg_page_leaves_no_ghost_text(output_dir):
         x0, y0, x1, y1 = b.rect
         region = arr[y0:y1, x0:x1].astype(int)
         dev = np.abs(region - np.array(info.bg)).max(axis=2)
-        # Faint leftovers 10+ levels off a white bubble read as a ghost of the old text.
-        assert (dev > 8).sum() == 0, f"ghost pixels left in {b.rect}: {(dev > 8).sum()}"
+        # Even faint leftovers a few levels off a white bubble read as a ghost of the old text.
+        assert (dev > 6).sum() == 0, f"ghost pixels left in {b.rect}: {(dev > 6).sum()}"
     # The bubble outline must still be there (left edge of the first bubble at y=230).
     assert arr[230, 518:526].min() < 80

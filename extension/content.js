@@ -426,12 +426,12 @@
     const parts = [];
     if (burst.done) parts.push(`Translated ${burst.done} image${burst.done === 1 ? "" : "s"}`);
     else if (!burst.failed) parts.push(burst.notext ? "No text found" : "Nothing to translate");
-    if (burst.failed) parts.push(`${burst.failed} failed`);
+    if (burst.failed) parts.push(burst.done ? `${burst.failed} failed` : `${burst.failed} image${burst.failed === 1 ? "" : "s"} failed`);
     let text = parts.join(" · ");
     let kind = burst.failed ? (burst.done ? "warn" : "error") : "ok";
     let timeout = 4000;
     if (burst.failed) {
-      text += ` - ${burst.errors[burst.errors.length - 1]}`;
+      text += `: ${burst.errors[burst.errors.length - 1]}`;
       timeout = 10000;
     }
     if (burst.notes.length) {
