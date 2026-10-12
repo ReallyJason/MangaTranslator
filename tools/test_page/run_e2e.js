@@ -125,8 +125,19 @@ async function main() {
     check("infinite-scroll image translated", await waitFor(page, isBlob, "p8"));
     check("webtoon strip translated", await waitFor(page, isBlob, "strip", 180000));
     // p6 is swapped by the page to page7.jpg at 6 s; it must be re-queued and translated again.
-    const p6ok = await waitFor(page, isBlob, "p6", 180000);
-    check("page-swapped image re-translated", p6ok);
+    // If the swap happened after we scrolled past, the new image waits until it's near the
+    // viewport again (by design), so scroll back to it like a reader would.
+    await page.evaluate(() => document.getElementById("p6").scrollIntoView());
+    const p6ok = await waitFor(page, (id) => {
+      const img = document.getElementById(id);
+      return img.getAttribute("src").startsWith("blob:") && img.dataset.fukidashi === "translated" &&
+        img.complete && window.__order.filter((x) => x === id).length >= 1 && performance.now() > 6500;
+    }, "p6", 180000);
+    const p6src = await page.evaluate(() => {
+      const img = document.getElementById("p6");
+      return img.dataset.fukidashi === "translated" ? "translated" : img.getAttribute("src");
+    });
+    check("page-swapped image re-translated", p6ok, p6src);
     check("pill summary after idle", await waitFor(page, () => {
       const h = document.querySelector("fukidashi-status");
       return h && /Translated \d+ image/.test(h.shadowRoot.textContent);
