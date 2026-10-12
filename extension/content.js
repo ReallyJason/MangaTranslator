@@ -483,7 +483,9 @@
   function translateImage(srcUrl) {
     const img = allImages().find((i) => {
       const rec = records.get(i);
-      return sourceUrl(i) === srcUrl || i.src === srcUrl || (rec && rec.translated === srcUrl);
+      if (sourceUrl(i) === srcUrl || i.src === srcUrl) return true;
+      // Also match the URL it had before we swapped it (e.g. right-click while showing originals).
+      return !!rec && (rec.translated === srcUrl || rec.src === srcUrl || (rec.orig && rec.orig.src === srcUrl));
     });
     if (!img) {
       Pill.show("Couldn't find that image on the page", { kind: "warn", timeout: 3500 });

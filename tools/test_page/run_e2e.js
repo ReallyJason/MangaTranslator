@@ -174,11 +174,19 @@ async function main() {
 
     // --- context menu path ("Translate this image") ---------------------------
     const before = (await imgInfo(page, "p2")).src;
-    await sw.evaluate((tabId) => chrome.tabs.sendMessage(tabId, { type: "translateImage", srcUrl: "http://127.0.0.1:8081/img/open/page2.jpg" }, { frameId: 0 }), tabId);
+    // A real right-click on a translated image reports its current (blob:) URL.
+    await sw.evaluate(([tabId, srcUrl]) => chrome.tabs.sendMessage(tabId, { type: "translateImage", srcUrl }, { frameId: 0 }), [tabId, before]);
     check("context-menu translate re-translates an image", await waitFor(page, (b) => {
       const s = document.getElementById("p2").getAttribute("src");
       return s.startsWith("blob:") && s !== b && document.getElementById("p2").complete;
     }, before, 120000));
+
+    const p5before = (await imgInfo(page, "p5")).src;
+    await sw.evaluate((tabId) => chrome.tabs.sendMessage(tabId, { type: "translateImage", srcUrl: "http://127.0.0.1:8081/img/page5.jpg" }, { frameId: 0 }), tabId);
+    check("context-menu translate also matches the original URL", await waitFor(page, (b) => {
+      const s = document.getElementById("p5").getAttribute("src");
+      return s !== b && document.getElementById("p5").dataset.fukidashi === "translated" && document.getElementById("p5").complete;
+    }, p5before, 120000));
 
     // --- keyboard shortcut handler (toggleSite) --------------------------------
     const off = await sw.evaluate(() => toggleSite("localhost"));
