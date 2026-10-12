@@ -1,0 +1,7 @@
+# Everything: core + OCR, LaMa inpainting and offline translation.
+# For an NVIDIA GPU install the CUDA build of torch first (see README).
+-r requirements.txt
+torch>=2.1
+easyocr>=1.7
+manga-ocr>=0.1.11
+argostranslate>=1.9
