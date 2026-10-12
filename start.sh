@@ -72,7 +72,14 @@ if [ "$REINSTALL" = 1 ] || [ ! -f "$MARKER" ] || [ "$(cat "$MARKER")" != "$WANT"
       fi
     fi
     say "Installing PyTorch"
-    "$VPY" -m pip install torch torchvision ${TORCH_ARGS[@]+"${TORCH_ARGS[@]}"} || warn "PyTorch failed to install: LaMa inpainting and EasyOCR will be unavailable."
+    if ! "$VPY" -m pip install torch torchvision ${TORCH_ARGS[@]+"${TORCH_ARGS[@]}"}; then
+      if [ -n "${TORCH_ARGS[*]+x}" ]; then
+        warn "Couldn't install from the PyTorch index; trying the default build from PyPI"
+        "$VPY" -m pip install torch torchvision || warn "PyTorch failed to install: LaMa inpainting and EasyOCR will be unavailable."
+      else
+        warn "PyTorch failed to install: LaMa inpainting and EasyOCR will be unavailable."
+      fi
+    fi
 
     FAILED=()
     for pkg in easyocr manga-ocr argostranslate; do

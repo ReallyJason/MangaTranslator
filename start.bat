@@ -77,7 +77,13 @@ set "TORCH_ARGS=--index-url https://download.pytorch.org/whl/cu128"
 :torch
 echo [fukidashi] Installing PyTorch
 "%VPY%" -m pip install torch torchvision %TORCH_ARGS%
+if not errorlevel 1 goto torch_done
+if defined TORCH_ARGS (
+  echo [fukidashi] Couldn't install from the PyTorch index; trying the default build from PyPI
+  "%VPY%" -m pip install torch torchvision
+)
 if errorlevel 1 echo [fukidashi] PyTorch failed to install: LaMa inpainting and EasyOCR will be unavailable.
+:torch_done
 
 for %%P in (easyocr manga-ocr argostranslate) do (
   echo [fukidashi] Installing %%P
