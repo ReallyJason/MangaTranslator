@@ -219,10 +219,10 @@ async function main() {
     // --- CSP that blocks blob: images ---------------------------------------------
     const csp = await ctx.newPage();
     await csp.goto(READER + "/csp.html");
-    check("CSP page falls back to data: URL", await waitFor(csp, () => {
-      const img = document.getElementById("c1");
-      return img.getAttribute("src").startsWith("data:image/png") && img.naturalWidth > 0;
-    }, null, 120000));
+    // Chrome lets the extension's blob: image through this CSP; if a browser blocks it,
+    // the content script falls back to a data: URL. Either way the translation must show.
+    check("translated image shown on a page whose CSP excludes blob:", await waitFor(csp, isBlob, "c1", 120000),
+      await csp.evaluate(() => document.getElementById("c1").getAttribute("src").slice(0, 10)));
     await csp.screenshot({ path: path.join(OUT, "csp_page.png") });
     clearInterval(watcher);
   } finally {

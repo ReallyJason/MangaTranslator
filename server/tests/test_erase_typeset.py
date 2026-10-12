@@ -199,3 +199,25 @@ def test_render_on_page_edge_does_not_crash():
     info = EraseInfo(flat=True, bg=(255, 255, 255), region=(0, 0, 30, 280))
     render_blocks(img, [b], [info], "en", FONTS_DIR)
     assert ImageDraw.Draw(img)  # rendered without exceptions
+
+
+def test_jpeg_page_leaves_no_ghost_text(output_dir):
+    """Real manga pages are JPEGs: compression ringing around glyphs must be erased too."""
+    import io
+
+    page = make_page()
+    buf = io.BytesIO()
+    page.image.save(buf, format="JPEG", quality=90)
+    arr = np.array(Image.open(io.BytesIO(buf.getvalue())).convert("RGB"))
+    infos = erase_blocks(arr, page.blocks, None)
+    Image.fromarray(arr).save(output_dir / "erased_jpeg.png")
+    for b, info, kind in zip(page.blocks, infos, page.kinds):
+        if kind != "bubble":
+            continue
+        x0, y0, x1, y1 = b.rect
+        region = arr[y0:y1, x0:x1].astype(int)
+        dev = np.abs(region - np.array(info.bg)).max(axis=2)
+        # Faint leftovers 10+ levels off a white bubble read as a ghost of the old text.
+        assert (dev > 8).sum() == 0, f"ghost pixels left in {b.rect}: {(dev > 8).sum()}"
+    # The bubble outline must still be there (left edge of the first bubble at y=230).
+    assert arr[230, 518:526].min() < 80

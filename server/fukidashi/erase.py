@@ -99,7 +99,8 @@ def _flat_fill(image: np.ndarray, block: Block, bg: np.ndarray) -> None:
     ring = pad * 2
     outer = _clip((inner[0] - ring, inner[1] - ring, inner[2] + ring, inner[3] + ring), w, h)
     crop = image[outer[1] : outer[3], outer[0] : outer[2]]
-    diff = (np.linalg.norm(crop.astype(np.float32) - bg, axis=2) > FLAT_COLOR_DIST).astype(np.uint8)
+    dist = np.linalg.norm(crop.astype(np.float32) - bg, axis=2)
+    diff = (dist > FLAT_COLOR_DIST).astype(np.uint8)
 
     inside = np.zeros_like(diff)
     inside[inner[1] - outer[1] : inner[3] - outer[1], inner[0] - outer[0] : inner[2] - outer[0]] = 1
@@ -116,8 +117,16 @@ def _flat_fill(image: np.ndarray, block: Block, bg: np.ndarray) -> None:
     if not mask.any():
         return
     k = max(1, int(round(block.char_size * 0.06)))
-    mask = cv2.dilate(mask, np.ones((2 * k + 1, 2 * k + 1), np.uint8))
-    crop[mask.astype(bool)] = bg.astype(np.uint8)
+    strokes = cv2.dilate(mask, np.ones((2 * k + 1, 2 * k + 1), np.uint8))
+    # JPEG ringing leaves faint halos around glyphs that the threshold above
+    # misses; near the strokes, also take any pixel that is off-background,
+    # but stay clear of the components we kept (outlines, art).
+    r = max(3, int(round(block.char_size * 0.25)))
+    near = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
+    other = ((diff > 0) & ~keep[labels]).astype(np.uint8)
+    other = cv2.dilate(other, np.ones((3, 3), np.uint8))
+    halo = (near > 0) & (dist > 10) & (other == 0)
+    crop[(strokes > 0) | halo] = bg.astype(np.uint8)
 
 
 class LamaInpainter:
