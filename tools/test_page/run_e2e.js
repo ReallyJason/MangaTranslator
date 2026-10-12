@@ -200,6 +200,10 @@ async function main() {
       const s = document.getElementById("p1").getAttribute("src");
       return s.startsWith("blob:") && s !== o && document.getElementById("p1").complete;
     }, oldP1, 180000));
+    check("re-translate finishes for the whole page", await waitFor(page, () => {
+      const h = document.querySelector("fukidashi-status");
+      return h && /Translated \d+ image/.test(h.shadowRoot.textContent) && !/failed/.test(h.shadowRoot.textContent);
+    }, null, 600000), await pillText(page));
     await popup.close();
 
     // --- server offline ----------------------------------------------------------
